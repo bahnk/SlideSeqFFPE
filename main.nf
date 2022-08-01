@@ -54,7 +54,7 @@ include { filter_out_too_short_read1 } from "./modules/process/processing"
 include { extract_barcode_and_umi } from "./modules/process/processing"
 include { filter_out_bad_up_primer } from "./modules/process/processing"
 
-up_primer_script = Channel.fromPath(Paths.get($workflow.projectDir, "bin/up_primer.py"))
+up_primer_script = Channel.fromPath("$workflow.projectDir/bin/up_primer.py")
 include { extract_probe_sequence } from "./modules/process/processing"
 /////////////
 
