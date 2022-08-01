@@ -1,0 +1,9 @@
+
+sample_sheet: data/SampleSheet.csv
+data_dir: data
+output_dir: results
+minimum_length_read1: 43
+maximum_errors_up_primer: 3
+five_prime_probe_adapter_length: 38
+probe_length: 31
+
