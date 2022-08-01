@@ -25,8 +25,8 @@ This is achieved by specifying the `data_dir` and the `sample_sheet` parameters 
 ## Filter out Reads 1 that are too short
 
 Bead barcode and UMI sequences are contained in Read 1.
-Sometimes sequencing errors shorten Read 1, so this information is not available anymore.
-We need to remove these shortened read because we can't process them, and this is the purpose of this step.
+Sometimes, sequencing errors shorten Read 1, so this information is not available anymore.
+We need to remove these shortened reads because we can't process them, and this is the purpose of this step.
 
 We use the [cutadapt program](https://cutadapt.readthedocs.io/en/stable/) in order to do that.
 
@@ -41,7 +41,7 @@ We extract the bead barcode and UMI from Read 1 based on its structure.
 
 We use [umi_tools extract](https://umi-tools.readthedocs.io/en/latest/reference/extract.html) in order to do that.
 
-**Currently, the read structre is hard coded and it is set to vs1.**
+**Currently, the read structure is hard coded and it is set to vs1.**
 **We might need to allow the user to specify the read structure.**
 **Again, I'll add that later if necessary.**
 
@@ -52,7 +52,7 @@ In the previous step we extracted these two sequences based on their position wi
 In this step we check the UP primer sequence in order to know that Read 1 is valid.
 
 We just use a custom script for this step (`bin/up_primer.py`).
-UP primer is supposed to be `TCTTCAGCGTTCCCGAGA`.
+UP primer sequence is supposed to be `TCTTCAGCGTTCCCGAGA`.
 For each read we compute the edit distance and if this distance is above a certain threshold we filter out the read.
 The threshold is usually set to 3 and can be specify in the [parameter file](config.md) by setting the `maximum_errors_up_primer` parameter.
 
@@ -72,7 +72,7 @@ The second parameter is the length of the probe (`probe_length`, normally 31).
 Now, we need to align Read 2 in order to quantify of the abundance of the probes in the sample.
 We will use [Bowtie 2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) for the alignment.
 However, first we need to create an index made of the original probes sequences.
-`Bowtie 2` need the probes sequences and a FASTA file.
+`Bowtie 2` needs the probes sequences and a FASTA file.
 The path of this FASTA file can be specified with the `probes_fasta` parameter in the [parameter file](config.md).
 
 ## Alignment
@@ -81,7 +81,7 @@ We use [Bowtie 2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) to ali
 
 ## Deduplication
 
-The deduplication step uses the UMI to remove any sort of duplicated reads.
+The deduplication step uses the UMIs to remove any sort of duplicated reads.
 This step is performed using [umi_tools dedup](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html).
 Importantly, we run `umi_tools dedup` with the `--per-cell` parameter, which means that `umi_tools` will group the reads based on their bead barcode sequence before deduplication.
 **This is something we should talk about.**
