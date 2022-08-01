@@ -19,10 +19,8 @@ We just run the [bcl2fastq program](https://support.illumina.com/sequencing/sequ
 We need to tell `bcl2fastq` where to find the BCL files and the sample sheet containing the information about the samples.
 This is achieved by specifying the `data_dir` and the `sample_sheet` parameters in the [parameter file](config.md).
 
-<span style="color:red">
-Warning! We don't merge the samples that they were run on different lanes.
-But I'll add that later if necessary.
-</span>
+**Warning! We don't merge the samples that were run on different lanes.**
+**But I'll add that later if necessary.**
 
 ## Filter out Reads 1 that are too short
 
@@ -43,11 +41,9 @@ We extract the bead barcode and UMI from Read 1 based on its structure.
 
 We use [umi_tools extract](https://umi-tools.readthedocs.io/en/latest/reference/extract.html) in order to do that.
 
-<span style="color:red">
-Currently, the read structre is hard coded and it is set to vs1.
-We might need to allow the user to specify the read structure.
-Again, I'll add that later if necessary.
-</span>
+**Currently, the read structre is hard coded and it is set to vs1.**
+**We might need to allow the user to specify the read structure.**
+**Again, I'll add that later if necessary.**
 
 ## Filter out bad UP primers
 
@@ -88,9 +84,7 @@ We use [Bowtie 2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) to ali
 The deduplication step uses the UMI to remove any sort of duplicated reads.
 This step is performed using [umi_tools dedup](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html).
 Importantly, we run `umi_tools dedup` with the `--per-cell` parameter, which means that `umi_tools` will group the reads based on their bead barcode sequence before deduplication.
-<span style="color:red">
-This is something we should talk about.
-</span>
+**This is something we should talk about.**
 
 ## Generate count matrix
 

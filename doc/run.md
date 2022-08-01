@@ -7,6 +7,7 @@ Then, download the probe sequences FASTA file by running:
 ```bash
 $ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/probes.fasta
 $ ls
+probes.fasta
 ```
 
 After that download an example parameter file:
@@ -14,6 +15,7 @@ After that download an example parameter file:
 ```bash
 $ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/params.yml
 $ ls
+params.yml
 $ cat params.yml
 
 # config file for Slide-seq FFPE
@@ -45,7 +47,7 @@ Finally, you can run the pipeline this way:
 nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml
 ```
 
-Alternatively, if you don't want to edit the `params.yml` file you can overwrite the parameters this way:
+Alternatively, if you don't want to edit the `params.yml` file, then you can overwrite the parameters this way:
 
 ```bash
 nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory

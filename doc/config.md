@@ -23,6 +23,8 @@ A config file example can be downloaded [here](https://bioinformatics.crick.ac.u
 
 ```bash
 $ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/params.yml
+$ ls
+params.yml
 ```
 
 ## The parameters
@@ -43,5 +45,7 @@ A FASTA file for the probes we currently use can be downloaded [here](https://bi
 
 ```bash
 $ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/probes.fasta
+$ ls
+probes.fasta
 ```
 

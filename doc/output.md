@@ -1,7 +1,7 @@
 
 # Pipeline output
 
-The output of the pipeline should in the directory specified by the `output_dir` parameter in the [parameter file](config.md).
+The output of the pipeline should be in the directory specified by the `output_dir` parameter in the [parameter file](config.md).
 
 Each sample has its own directory based on its name.
 Otherwise, you shoud find a `demultiplexing` directory, a `probe_index` directory that contains the probes index, and the output of [MultiQC](https://multiqc.info) (`multiqc_report.html` and `multiqc_data`):
