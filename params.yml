@@ -1,6 +1,7 @@
 
 sample_sheet: data/SampleSheet.csv
 data_dir: data
+probes_fasta: assets/probes.fasta
 output_dir: results
 minimum_length_read1: 43
 maximum_errors_up_primer: 3

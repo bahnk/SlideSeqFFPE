@@ -61,7 +61,7 @@ include { extract_probe_sequence } from "./modules/process/processing"
 ////////////
 // alignment
 
-probes_fasta = Channel.fromPath("assets/probes.fasta")
+probes_fasta = Channel.fromPath(params.probes_fasta)
 include { create_probe_index } from "./modules/process/align"
 include { align_probe } from "./modules/process/align"
 ////////////
