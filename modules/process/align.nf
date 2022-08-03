@@ -65,3 +65,52 @@ process align_probe {
 		"""
 }
 
+process check_mapping {
+
+	tag { "${name}" }
+
+	label "python"
+
+	publishDir Paths.get( params.output_dir ),
+		mode: "copy",
+		overwrite: "true",
+		saveAs: { filename -> "${name}/05_align_probe/${filename}" }
+
+	input:
+		tuple \
+			val(metadata),
+			path(bam),
+			path(bai),
+			path(script),
+			path(plot_mapped_script),
+			path(plot_hits_script),
+			path(plot_umis_script)
+
+	output:
+		tuple val(metadata), path("${name}.mapped.csv"), emit: mapped
+		tuple val(metadata), path("${name}.mapped.pdf"), emit: mapped_pdf
+		tuple val(metadata), path("${name}.mapped.png"), emit: mapped_png
+		tuple val(metadata), path("${name}.hits.csv"), emit: hits
+		tuple val(metadata), path("${name}.hits.pdf"), emit: hits_pdf
+		tuple val(metadata), path("${name}.hits.png"), emit: hits_png
+		tuple val(metadata), path("${name}.reads_per_umi.pdf"), emit: reads_per_umi_pdf
+		tuple val(metadata), path("${name}.reads_per_umi.png"), emit: reads_per_umi_png
+		tuple val(metadata), path("${name}.umis_per_barcode.pdf"), emit: umis_per_barcode_pdf
+		tuple val(metadata), path("${name}.umis_per_barcode.png"), emit: umis_per_barcode_png
+		tuple val(metadata), path("${name}.mean_umis_per_barcode.pdf"), emit: mean_umis_per_barcode_pdf
+		tuple val(metadata), path("${name}.mean_umis_per_barcode.png"), emit: mean_umis_per_barcode_png
+		tuple val(metadata), path("${name}.probes_per_umi.pdf"), emit: probes_per_umi_pdf
+		tuple val(metadata), path("${name}.probes_per_umi.png"), emit: probes_per_umi_png
+
+	script:
+
+		name = metadata["name"]
+
+		"""
+		python3 $script $bam "${name}"
+		python3 $plot_mapped_script "${name}.mapped.csv" "${name}"
+		python3 $plot_hits_script "${name}.hits.csv" "${name}"
+		python3 $plot_umis_script $bam "${name}"
+		"""
+}
+

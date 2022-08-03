@@ -17,27 +17,68 @@ process filter_out_too_short_read1 {
 
 	output:
 		tuple val(metadata),
-			path("${name}.long_enough_read1.R1.fastq.gz"),
-			path("${name}.long_enough_read1.R2.fastq.gz"),
+			path("${name}.${suffix}.R1.fastq.gz"),
+			path("${name}.${suffix}.R2.fastq.gz"),
 			emit: fastqs
 		tuple val(metadata), path("${name}.cutadapt.filter_out_too_short_read1.log"), emit: log
 		tuple val(metadata), path("Version"), emit: version
+		tuple val(metadata), path("${name}.${suffix}.csv"), emit: metrics
+
+	script:
+
+		name = metadata["name"]
+		suffix = "long_enough_read1"
+
+		"""
+		cutadapt \
+			--minimum-length=$params.minimum_length_read1 \
+			--pair-filter=first \
+			--output="${name}.${suffix}.R1.fastq.gz" \
+			--paired-output="${name}.${suffix}.R2.fastq.gz" \
+			--cores=$task.cpus \
+			$fastq1 $fastq2 \
+			> "${name}.cutadapt.filter_out_too_short_read1.log"
+
+		cutadapt --version > Version
+
+		zcat $fastq1 \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Read 1 length", "Total", \$0 }' \
+			> "${name}.${suffix}.csv" 
+
+		zcat "${name}.${suffix}.R1.fastq.gz" \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Read 1 length", "Long enough", \$0 }' \
+			>> "${name}.${suffix}.csv" 
+		"""
+}
+
+process plot_filter_out_too_short_read1 {
+
+	tag { "${name}" }
+
+	label "python"
+
+	publishDir Paths.get( params.output_dir ),
+		mode: "copy",
+		overwrite: "true",
+		saveAs: { filename -> "${name}/01_filter_out_too_short_read1/${filename}" }
+
+	input:
+		tuple val(metadata), path(csv), path(script)
+
+	output:
+		tuple val(metadata), path("${name}.filter_out_too_short_read1.pdf"), emit: pdf
+		tuple val(metadata), path("${name}.filter_out_too_short_read1.png"), emit: png
 
 	script:
 
 		name = metadata["name"]
 
 		"""
-		cutadapt \
-			--minimum-length=$params.minimum_length_read1 \
-			--pair-filter=first \
-			--output="${name}.long_enough_read1.R1.fastq.gz" \
-			--paired-output="${name}.long_enough_read1.R2.fastq.gz" \
-			--cores=$task.cpus \
-			$fastq1 $fastq2 \
-			> "${name}.cutadapt.filter_out_too_short_read1.log"
-
-		cutadapt --version > Version
+		python3 $script $csv "${name}"
 		"""
 }
 
@@ -57,8 +98,8 @@ process extract_barcode_and_umi {
 
 	output:
 		tuple val(metadata),
-			path("${name}.extract_barcode_umi.R1.fastq.gz"),
-			path("${name}.extract_barcode_umi.R2.fastq.gz"),
+			path("${name}.${suffix}.R1.fastq.gz"),
+			path("${name}.${suffix}.R2.fastq.gz"),
 			emit: fastqs
 		tuple val(metadata),
 			path("${name}.failed_extraction.R1.fastq.gz"),
@@ -66,18 +107,20 @@ process extract_barcode_and_umi {
 			emit: failed
 		tuple val(metadata), path("${name}.umi_tools.extract.log"), emit: log
 		tuple val(metadata), path("Version"), emit: version
+		tuple val(metadata), path("${name}.${suffix}.csv"), emit: metrics
 
 	script:
 
 		name = metadata["name"]
 		regex = "^(?P<cell_1>.{1,8}).{1,18}(?P<cell_2>.{1,6})(?P<discard_2>.{1,3})(?P<umi_1>.{1,8})(?<discard_1>.*)"
+		suffix = "extract_barcode_umi"
 
 		"""
 		umi_tools extract \
 			--stdin=$fastq1 \
 			--read2-in=$fastq2 \
-			--stdout="${name}.extract_barcode_umi.R1.fastq.gz" \
-			--read2-out="${name}.extract_barcode_umi.R2.fastq.gz" \
+			--stdout="${name}.${suffix}.R1.fastq.gz" \
+			--read2-out="${name}.${suffix}.R2.fastq.gz" \
 			--extract-method=regex \
 			--bc-pattern="${regex}" \
 			--filtered-out="${name}.failed_extraction.R1.fastq.gz" \
@@ -85,6 +128,24 @@ process extract_barcode_and_umi {
 			--log="${name}.umi_tools.extract.log"
 
 		umi_tools --version > Version
+
+		zcat $fastq1 \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Barcode/UMI extraction", "Total", \$0 }' \
+			> "${name}.${suffix}.csv"
+
+		zcat "${name}.${suffix}.R1.fastq.gz" \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Barcode/UMI extraction", "Success", \$0 }' \
+			>> "${name}.${suffix}.csv"
+
+		zcat "${name}.failed_extraction.R1.fastq.gz" \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Barcode/UMI extraction", "Failure", \$0 }' \
+			>> "${name}.${suffix}.csv"
 		"""
 }
 
@@ -100,11 +161,14 @@ process filter_out_bad_up_primer {
 		saveAs: { filename -> "${name}/03_filter_out_bad_up_primer_sequence/${filename}" }
 
 	input:
-		tuple val(metadata), path(fastq1), path(fastq2), path(script)
+		tuple val(metadata), path(fastq1), path(fastq2), path(script), path(plot_script)
 
 	output:
 		tuple val(metadata), path("${name}.up_primer_pass.fastq.gz"), emit: pass
 		tuple val(metadata), path("${name}.up_primer_fail.fastq.gz"), emit: fail
+		tuple val(metadata), path("${name}.up_primer_metrics.csv"), emit: metrics
+		tuple val(metadata), path("${name}.up_primer_metrics.pdf"), emit: pdf
+		tuple val(metadata), path("${name}.up_primer_metrics.png"), emit: png
 
 	script:
 
@@ -112,6 +176,7 @@ process filter_out_bad_up_primer {
 
 		"""
 		python3 $script "${name}" $fastq1 $fastq2 $params.maximum_errors_up_primer
+		python3 $plot_script "${name}.up_primer_metrics.csv" "${name}"
 		"""
 }
 
@@ -132,28 +197,49 @@ process extract_probe_sequence {
 		tuple val(metadata), path(fastq)
 
 	output:
-		tuple val(metadata), path("${name}.probe_extracted.fastq.gz"), emit: fastq
-		tuple val(metadata), path("${name}.5prime_trimmed.fastq.gz"), emit: five_prime
+		tuple val(metadata), path("${name}.${suffix1}.fastq.gz"), emit: five_prime
+		tuple val(metadata), path("${name}.${suffix2}.fastq.gz"), emit: fastq
+		tuple val(metadata), path("${name}.${suffix2}.csv"), emit: metrics
 		tuple val(metadata), path("Version"), emit: version
 
 	script:
 
 		name = metadata["name"]
+		suffix1 = "5prime_trimmed"
+		suffix2 = "probe_extracted"
 
 		"""
 		seqtk trimfq \
 			-b $params.five_prime_probe_adapter_length \
 			$fastq \
-			| gzip -c > "${name}.5prime_trimmed.fastq.gz"
+			| gzip -c > "${name}.${suffix1}.fastq.gz"
 
 		cutadapt \
 			--cores $task.cpus \
 			--length $params.probe_length \
-			-o "${name}.probe_extracted.fastq.gz" \
-			"${name}.5prime_trimmed.fastq.gz"
+			-o "${name}.${suffix2}.fastq.gz" \
+			"${name}.${suffix1}.fastq.gz"
 
 		seqtk 2>&1 | grep -i version | awk '{ print "seqtk " \$0 }' > Version
 		cutadapt --version | awk '{ print "cudadapt version " \$0 }' >> Version
+
+		zcat $fastq \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "Total", \$0 }' \
+			> "${name}.${suffix2}.csv"
+
+		zcat "${name}.${suffix1}.fastq.gz" \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "5\\x27 Adapter", \$0 }' \
+			>> "${name}.${suffix2}.csv"
+
+		zcat "${name}.${suffix2}.fastq.gz" \
+			| sed -n "2~4p" \
+			| wc -l \
+			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "Shortened", \$0 }' \
+			>> "${name}.${suffix2}.csv"
 		"""
 }
 

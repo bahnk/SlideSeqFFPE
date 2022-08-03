@@ -53,6 +53,10 @@ def Process(name, path1, path2, threshold=3):#
 	rec1 = SeqIO.SeqRecord("dummy")
 	
 	counter = 1
+
+	total = 0
+	up_pass = 0
+	up_fail = 0
 	
 	while rec1.seq != "":
 	
@@ -63,21 +67,35 @@ def Process(name, path1, path2, threshold=3):#
 			break
 	
 		distance = HammingDistance(rec1.seq)
+
+		total += 1
 	
 		if distance <= threshold:
 			SeqIO.write(rec2, fastq_pass, "fastq")
+			up_pass += 1
 		else:
 			SeqIO.write(rec2, fastq_fail, "fastq")
+			up_fail += 1
 	
 		counter += 1
 		if counter % 100000 == 0:
 			print(str(counter).zfill(8))
 		#########################################################################
-	
+
 	fastq1.close()
 	fastq2.close()
 	fastq_pass.close()
 	fastq_fail.close()
+
+	# save metrics
+	d = {
+		"Name": [name] * 3,
+		"Process": ["UP primer"] * 3,
+		"Metric": ["Total", "Pass", "Fail"],
+		"Value": [total, up_pass, up_fail],
+	}
+	df = pd.DataFrame(data=d)
+	df.to_csv(f"{name}.up_primer_metrics.csv", index=False, header=False)
 	############################################################################
 
 ###############################################################################

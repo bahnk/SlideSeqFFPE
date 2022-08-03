@@ -51,11 +51,15 @@ include { merge_lanes } from "./modules/process/demultiplexing"
 // processing
 
 include { filter_out_too_short_read1 } from "./modules/process/processing"
+include { plot_filter_out_too_short_read1 } from "./modules/process/processing"
+plot_long_enough_script = Channel.fromPath("$workflow.projectDir/bin/plot_long_enough.py")
+
 include { extract_barcode_and_umi } from "./modules/process/processing"
 include { filter_out_bad_up_primer } from "./modules/process/processing"
 
 up_primer_script = Channel.fromPath("$workflow.projectDir/bin/up_primer.py")
 include { extract_probe_sequence } from "./modules/process/processing"
+plot_up_primer_script = Channel.fromPath("$workflow.projectDir/bin/plot_up_check.py")
 /////////////
 
 ////////////
@@ -64,11 +68,18 @@ include { extract_probe_sequence } from "./modules/process/processing"
 probes_fasta = Channel.fromPath(params.probes_fasta)
 include { create_probe_index } from "./modules/process/align"
 include { align_probe } from "./modules/process/align"
+
+include { check_mapping } from "./modules/process/align"
+mapping_script = Channel.fromPath("$workflow.projectDir/bin/mapping.py")
+plot_mapped_script = Channel.fromPath("$workflow.projectDir/bin/plot_read_mapped.py")
+plot_hits_script = Channel.fromPath("$workflow.projectDir/bin/plot_read_hits.py")
+plot_umis_script = Channel.fromPath("$workflow.projectDir/bin/plot_umis.py")
 ////////////
 
 ////////////////
 // deduplication
 
+include { umi_tools_group } from "./modules/process/deduplication"
 include { umi_tools_deduplicate } from "./modules/process/deduplication"
 include { umi_tools_count } from "./modules/process/deduplication"
 ////////////////
@@ -78,6 +89,7 @@ include { umi_tools_count } from "./modules/process/deduplication"
 
 include { fastqc } from "./modules/process/quality_control"
 include { multiqc } from "./modules/process/quality_control"
+include { merge_plots } from "./modules/process/quality_control"
 //////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,7 +107,7 @@ workflow {
 
 	bcl2fastq(TO_DEMULTI)
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	bcl2fastq
 		.out
@@ -114,19 +126,27 @@ workflow {
 	// merging the samples run on several lanes here
 	// the channel could be named SAMPLES
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	filter_out_too_short_read1(FASTQ)
+	plot_filter_out_too_short_read1(
+		filter_out_too_short_read1
+			.out
+			.metrics
+			.combine(plot_long_enough_script)
+	)
+
 	extract_barcode_and_umi(filter_out_too_short_read1.out.fastqs)
 	filter_out_bad_up_primer(
 		extract_barcode_and_umi
 			.out
 			.fastqs
 			.combine(up_primer_script)
+			.combine(plot_up_primer_script)
 	)
 	extract_probe_sequence(filter_out_bad_up_primer.out.pass)
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	create_probe_index(probes_fasta)
 	align_probe(
@@ -135,14 +155,41 @@ workflow {
 			.fastq
 			.combine( create_probe_index.out.index.map{[it]} )
 	)
+	check_mapping(
+		align_probe
+			.out
+			.bam
+			.combine(mapping_script)
+			.combine(plot_mapped_script)
+			.combine(plot_hits_script)
+			.combine(plot_umis_script)
+	)
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
-	umi_tools_deduplicate(align_probe.out.bam)
-	umi_tools_count(umi_tools_deduplicate.out.bam)
+	//umi_tools_group(align_probe.out.bam)
+	//umi_tools_deduplicate(align_probe.out.bam)
+	//umi_tools_count(umi_tools_deduplicate.out.bam)
+	umi_tools_count(align_probe.out.bam)
 
-	///////////////////////////////////////////////////////////////////////////
-	
+	////////////////////////////////////////////////////////////////////////////
+
+	plot_filter_out_too_short_read1.out.pdf
+		.concat(filter_out_bad_up_primer.out.pdf)
+		.concat(check_mapping.out.mapped_pdf)
+		.concat(check_mapping.out.hits_pdf)
+		.concat(check_mapping.out.reads_per_umi_pdf)
+		.concat(check_mapping.out.umis_per_barcode_pdf)
+		.concat(check_mapping.out.mean_umis_per_barcode_pdf)
+		.concat(check_mapping.out.probes_per_umi_pdf)
+		.map{ [ it[0]["name"] , it[1] ] }
+		.groupTuple()
+		.set{PDFS}
+
+	merge_plots(PDFS)
+
+	////////////////////////////////////////////////////////////////////////////
+
 	//bcl2fastq.out.stats
 	//bcl2fastq.out.reports
 	//fastqc.out.html
@@ -168,8 +215,8 @@ workflow {
 			extract_barcode_and_umi.out.log.map{it[1]},
 			align_probe.out.log.map{it[1]},
 			align_probe.out.stats.map{it[1]},
-			umi_tools_deduplicate.out.log.map{it[1]},
-			umi_tools_deduplicate.out.stats.map{it[1]},
+			//umi_tools_deduplicate.out.log.map{it[1]},
+			//umi_tools_deduplicate.out.stats.map{it[1]},
 			umi_tools_count.out.log.map{it[1]}
 		)
 		.collect()

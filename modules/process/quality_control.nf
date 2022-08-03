@@ -50,3 +50,26 @@ process multiqc {
 		"""
 }
 
+process merge_plots {
+
+	tag { "${name}" }
+
+	label "python"
+
+	publishDir Paths.get( params.output_dir ),
+		mode: "copy",
+		overwrite: "true",
+		saveAs: { filename -> "${name}/${filename}" }
+
+	input:
+		tuple val(name), path(pdfs)
+
+	output:
+		file "${name}.pdf"
+
+	script:
+		"""
+		pdfunite $pdfs "${name}.pdf"
+		"""
+}
+

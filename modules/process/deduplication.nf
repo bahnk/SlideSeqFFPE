@@ -1,5 +1,58 @@
 import java.nio.file.Paths
 
+process umi_tools_group {
+
+	tag { "${name}" }
+
+	label "sequencing"
+
+	publishDir Paths.get( params.output_dir ),
+		mode: "copy",
+		overwrite: "true",
+		saveAs: { filename -> "${name}/06_umi_tools_group/${filename}" }
+
+	input:
+		tuple val(metadata), path(bam), path(bai)
+
+	output:
+		tuple \
+			val(metadata),
+			path("${name}.${suffix}.bam"),
+			path("${name}.${suffix}.bam.bai"),
+			emit: bam
+		tuple val(metadata), path("${name}.${suffix}.tsv"), emit: group
+		tuple val(metadata), path("${name}.${suffix}.tsv.gz"), emit: group_gz
+		tuple val(metadata), path("${name}.${suffix}.log"), emit: log
+		tuple val(metadata), path("Version"), emit: version
+
+	script:
+
+		name = metadata["name"]
+		suffix = "umi_tools_group"
+
+		"""
+		umi_tools group \
+			--extract-umi-method=read_id \
+			--umi-separator=_ \
+			--method=directional \
+			--output-bam \
+			--per-cell \
+			--group-out="${name}.${suffix}.tsv" \
+			--stdin=$bam \
+			--stdout="${name}.${suffix}.bam" \
+			--log="${name}.${suffix}.log" \
+			--umi-group-tag=BX \
+			--edit-distance-threshold=3
+
+		cat "${name}.${suffix}.tsv" | gzip -c > "${name}.${suffix}.tsv.gz"
+
+		umi_tools --version > Version
+		
+		samtools index "${name}.${suffix}.bam"
+		samtools --version >> Version
+		"""
+}
+
 process umi_tools_deduplicate {
 
 	tag { "${name}" }
@@ -35,7 +88,7 @@ process umi_tools_deduplicate {
 			--log="${name}.umi_tools_deduplicate.log" \
 			--extract-umi-method=read_id \
 			--umi-separator=_ \
-			--per-cell \
+			--per-contig \
 			--output-stats="${name}.umi_tools_deduplicate"
 
 		umi_tools --version > Version
@@ -54,7 +107,7 @@ process umi_tools_count {
 	publishDir Paths.get( params.output_dir ),
 		mode: "copy",
 		overwrite: "true",
-		saveAs: { filename -> "${name}/07_umi_tools_count/${filename}" }
+		saveAs: { filename -> "${name}/06_umi_tools_count/${filename}" }
 
 	input:
 		tuple val(metadata), path(bam), path(bai)
