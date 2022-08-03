@@ -48,7 +48,10 @@ def count_umis(bam_path, name):#
 	
 	############################################################################
 	hist_reads = sns.histplot(data=reads, x="Reads", log_scale=True)
-	hist_reads.set_title("Reads per UMI ({:,} reads in total)".format(reads.Reads.sum()))
+	hist_reads.set_title(
+		"Reads per UMI ({:,} reads, {:,} UMIs)"\
+			.format(reads.Reads.sum()), reads.shape[0]
+	)
 	fig = hist_reads.get_figure()
 	fig.savefig(f"{name}.reads_per_umi.pdf")
 	fig.savefig(f"{name}.reads_per_umi.png")
