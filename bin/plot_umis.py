@@ -90,7 +90,7 @@ def count_umis(bam_path, name):#
 	bar_probes = sns.barplot(data=mean_umis, x="Barcodes", y="Count")
 	bar_probes.set_title(
 		"Mean UMIs per barcode\n({:,} barcodes, {:,} UMIs, threshold: {:,})"\
-		.format(umis.shape[0], umis.UMIs.sum(), threshold)
+		.format(umis.shape[0], umis.UMIs.sum(), round(threshold, 1))
 	)
 	fig = bar_probes.get_figure()
 	fig.savefig(f"{name}.mean_umis_per_barcode.pdf")
