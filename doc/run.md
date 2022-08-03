@@ -2,7 +2,16 @@
 # Running the pipeline
 
 Just `ssh` to camp and open terminal demultiplexer (`tmux` or `screen`) if you use one.
-Then, download the probe sequences FASTA file by running:
+
+Then, be sure that your singularity config directory is not in your home.
+For example:
+
+```bash
+$ ls -l ~/.singularity
+lrwxrwxrwx 1 username domain users 40 Aug 26  2021 /camp/home/username/.singularity -> /camp/stp/babs/working/username/.singularity
+```
+
+You can now download the probe sequences FASTA file by running:
 
 ```bash
 $ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/probes.fasta
@@ -39,6 +48,11 @@ We need to load these two modules before running the pipeline:
 
 ```bash
 module load Nextflow/22.04.0 Singularity/3.6.4
+```
+
+Then, pull the latest version of the pipeline:
+```bash
+nextflow pull bahnk/SlideSeqFFPE
 ```
 
 Finally, you can run the pipeline this way:
