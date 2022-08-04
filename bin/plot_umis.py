@@ -78,7 +78,9 @@ def count_umis(bam_path, name):#
 	fig.clf()
 	
 	############################################################################
+
 	threshold = umis.UMIs.quantile(.9)
+
 	top10 = umis.loc[ umis.UMIs >= threshold ]
 			
 	mean_umis = pd\
