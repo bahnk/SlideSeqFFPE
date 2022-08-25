@@ -65,7 +65,7 @@ process align_probe {
 		"""
 }
 
-process add_probe_tag {
+process add_tags {
 
 	tag { "${name}" }
 
@@ -91,10 +91,10 @@ process add_probe_tag {
 	script:
 
 		name = metadata["name"]
-		suffix = "probe_tag"
+		suffix = "tagged"
 
 		"""
-		python3 $script $bam "${name}" "PB" "${suffix}"
+		python3 $script $bam "${name}" "PB" "BC" "UM" "${suffix}"
 		samtools index "${name}.${suffix}.bam"
 		samtools --version >> Version
 		"""
