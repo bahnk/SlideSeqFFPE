@@ -65,6 +65,41 @@ process align_probe {
 		"""
 }
 
+process add_probe_tag {
+
+	tag { "${name}" }
+
+	label "python"
+	cpus 2
+
+	publishDir Paths.get( params.output_dir ),
+		mode: "copy",
+		overwrite: "true",
+		saveAs: { filename -> "${name}/05_align_probe/${filename}" }
+
+	input:
+		tuple val(metadata), path(bam), path(bai), path(script)
+
+	output:
+		tuple \
+			val(metadata),
+			path("${name}.${suffix}.bam"),
+			path("${name}.${suffix}.bam.bai"),
+			emit: bam
+		tuple val(metadata), path("Version"), emit: version
+
+	script:
+
+		name = metadata["name"]
+		suffix = "probe_tag"
+
+		"""
+		python3 $script $bam "${name}" "PB" "${suffix}"
+		samtools index "${name}.${suffix}.bam"
+		samtools --version >> Version
+		"""
+}
+
 process check_mapping {
 
 	tag { "${name}" }
