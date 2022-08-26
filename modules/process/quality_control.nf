@@ -73,3 +73,29 @@ process merge_plots {
 		"""
 }
 
+process export_metrics {
+
+	tag { "${name}" }
+
+	label "python"
+
+	publishDir Paths.get( params.output_dir ), mode: "copy", overwrite: "true"
+
+	input:
+		tuple path(csvs), path(script)
+
+	output:
+		file "${name}.read_counts.csv"
+		file "${name}.read_percent.csv"
+		file "${name}.umis_per_barcode.csv"
+		file "${name}.duplicates_percent.csv"
+
+	script:
+
+		name = "metrics"
+
+		"""
+		python3 $script "${name}" "."
+		"""
+}
+

@@ -46,8 +46,12 @@ def DupRate(name, umi_groups_path, bcd_groups_path, suffix):#
 			"Reads": ["Non duplicate", "Duplicate"],
 			"Count": [non_dup_reads_total, dup_reads_total]
 		})\
-		.assign(Frequency=lambda x: (x.Count / x.Count.sum() * 100).round(1))
-	reads.to_csv(f"{name}.{suffix}.duplicated_reads_count.csv", index=False)
+		.assign(Frequency=lambda x: (x.Count / x.Count.sum() * 100).round(1))\
+		.assign(Name=name) \
+		.assign(Process="Count")\
+		.loc[:,["Name", "Process", "Reads", "Count"]]
+	reads.to_csv(f"{name}.{suffix}.duplicated_reads_count.csv",
+		index=False, header=False)
 	
 	# plot duplicated reads count
 	reads_plot = sns.barplot(data=reads, x="Reads", y="Count")
@@ -91,10 +95,16 @@ def DupRate(name, umi_groups_path, bcd_groups_path, suffix):#
 	mean_umis = pd\
 		.DataFrame({
 			"Barcodes": ["All", "Top 10 %"],
-			"Count": [umis.UMIs.mean(), top10.UMIs.mean()]
-		})
+			"Mean": [round(umis.UMIs.mean(), 2), round(top10.UMIs.mean(), 2)]
+		})\
+		.assign(Name=name)\
+		.assign(Process="Count")\
+		.loc[:,["Name", "Process", "Barcodes", "Mean"]]
+	mean_umis.to_csv(f"{name}.{suffix}.mean_umis_per_barcode.csv",
+		index=False, header=False)
+	
 		
-	umis_plot = sns.barplot(data=mean_umis, x="Barcodes", y="Count")
+	umis_plot = sns.barplot(data=mean_umis, x="Barcodes", y="Mean")
 	umis_plot.set_title(
 		"Mean UMIs per barcode after deduplication\n({:,} reads {:,} barcodes, {:,} UMIs, threshold: {:,})"\
 		.format(non_dup_reads_total, umis.shape[0], umis.UMIs.sum(), round(threshold, 1))
@@ -103,7 +113,7 @@ def DupRate(name, umi_groups_path, bcd_groups_path, suffix):#
 	fig.savefig(f"{name}.{suffix}.mean_umis_per_barcode.pdf")
 	fig.savefig(f"{name}.{suffix}.mean_umis_per_barcode.png")
 	fig.clf()
-	###########################################################################
+	############################################################################
 
 ##########################
 if __name__ == "__main__":

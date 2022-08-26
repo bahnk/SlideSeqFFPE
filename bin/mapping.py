@@ -13,7 +13,7 @@ def count_mappings(bam_path, name):#
 ####################################
 
 	#bam_path = "results/10um_RNase1/05_align_probe/10um_RNase1.align.bam"
-	#name = "sample1"
+	#name = "tmp/sample1"
 	
 	bam = pysam.AlignmentFile(bam_path, "rb")
 	probes = defaultdict(set)
@@ -32,7 +32,11 @@ def count_mappings(bam_path, name):#
 		.value_counts()\
 		.sort_values(ascending=False)\
 		.to_frame()\
-		.reset_index()
+		.reset_index()\
+		.rename(columns={"index": "Metric", 0: "Reads"})\
+		.assign(Name=name)\
+		.assign(Process="Alignment")\
+		.loc[:, ["Name", "Process", "Metric", "Reads"]]
 	
 	mappings.to_csv(f"{name}.mapped.csv", index=False, header=False)
 	

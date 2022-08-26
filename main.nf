@@ -97,6 +97,9 @@ include { umi_tools_count } from "./modules/process/deduplication"
 include { fastqc } from "./modules/process/quality_control"
 include { multiqc } from "./modules/process/quality_control"
 include { merge_plots } from "./modules/process/quality_control"
+
+include { export_metrics } from "./modules/process/quality_control"
+export_metrics_script = Channel.fromPath("$workflow.projectDir/bin/export_metrics.py")
 //////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,7 +179,7 @@ workflow {
 
 	add_tags( align_probe.out.bam.combine(add_tags_script) )
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	umi_tools_group(add_tags.out.bam)
 	umi_tools_group_barcodes(umi_tools_group.out.bam)
@@ -193,7 +196,7 @@ workflow {
 
 	duplication_rate( TO_DUP_RATE.combine(duplication_rate_script) )
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	plot_filter_out_too_short_read1.out.pdf
 		.concat(filter_out_bad_up_primer.out.pdf)
@@ -211,7 +214,25 @@ workflow {
 
 	merge_plots(PDFS)
 
-	///////////////////////////////////////////////////////////////////////////
+	filter_out_too_short_read1
+		.out
+		.metrics
+		.concat(
+			extract_barcode_and_umi.out.metrics,
+			filter_out_bad_up_primer.out.metrics,
+			extract_probe_sequence.out.metrics,
+			check_mapping.out.mapped,
+			duplication_rate.out.reads_csv,
+			duplication_rate.out.umis_csv
+		)
+		.map{it[1]}
+		.collect()
+		.map{[it]}
+		.set{ TO_EXPORT }
+	
+	export_metrics( TO_EXPORT.combine(export_metrics_script) )
+
+	////////////////////////////////////////////////////////////////////////////
 
 	//bcl2fastq.out.stats
 	//bcl2fastq.out.reports

@@ -177,6 +177,7 @@ process duplication_rate {
 		tuple val(metadata), path("${name}.${suffix}.duplicated_reads_count.pdf"), emit: reads_pdf
 		tuple val(metadata), path("${name}.${suffix}.duplicated_reads_count.png"), emit: reads_png
 		tuple val(metadata), path("${name}.${suffix}.corrected_barcodes.csv"), emit: barcodes
+		tuple val(metadata), path("${name}.${suffix}.mean_umis_per_barcode.csv"), emit: umis_csv
 		tuple val(metadata), path("${name}.${suffix}.mean_umis_per_barcode.pdf"), emit: umis_pdf
 		tuple val(metadata), path("${name}.${suffix}.mean_umis_per_barcode.png"), emit: umis_png
 

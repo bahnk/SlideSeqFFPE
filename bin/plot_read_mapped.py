@@ -16,18 +16,18 @@ def count_mapping(csv_path, name):#
 ###################################
 
 	#csv_path = "results/10um_bead-prok/05_align_probe/10um_bead-prok.mapped.csv"
-	#name = "sample1"
+	#name = "tmp/sample1"
 	
 	# load
 	df = pd\
 		.read_csv(csv_path, header=None, index_col=None)\
-		.rename(columns={0: "Mapping", 1: "Reads"})
+		.rename(columns={0:"Name", 1:"Process", 2:"Mapping", 3:"Reads"})
 	
 	# plot
 	bar_probes = sns.barplot(data=df, x="Mapping", y="Reads")
 	bar_probes.set_title(
 		"Read mapping a probe ({:,} total, {:,} mapped)"\
-			.format(df.Reads.sum(), df.set_index("Mapping").loc["Mapped"].iloc[0])
+			.format(df.Reads.sum(), df.set_index("Mapping").loc["Mapped"].Reads)
 	)
 	fig = bar_probes.get_figure()
 	fig.savefig(f"{name}.mapped.pdf")
