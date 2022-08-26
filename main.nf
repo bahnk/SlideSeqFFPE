@@ -85,29 +85,11 @@ plot_umis_script = Channel.fromPath("$workflow.projectDir/bin/plot_umis.py")
 include { umi_tools_group } from "./modules/process/deduplication"
 include { umi_tools_group_barcodes } from "./modules/process/deduplication"
 
-include { collapse_barcodes } from "./modules/process/deduplication"
-Channel
-	.fromPath([
-		"$workflow.projectDir/assets/hypr-seq/collapse_barcodes.py",
-		"$workflow.projectDir/assets/hypr-seq/mip_tools.py",
-		"$workflow.projectDir/assets/hypr-seq/outlier_aware_hist.py"
-	])
-	.collect()
-	.set{ collapse_script }
-
 include { duplication_rate } from "./modules/process/deduplication"
 duplication_rate_script = Channel.fromPath("$workflow.projectDir/bin/duplication_rate.py")
 
-include { umi_tools_deduplicate } from "./modules/process/deduplication"
 include { umi_tools_count } from "./modules/process/deduplication"
 ////////////////
-
-//////////////
-// subsampling
-
-include { subsample } from "./modules/process/subsampling"
-subsample_script = Channel.fromPath("$workflow.projectDir/bin/subsample.py")
-//////////////
 
 //////////////////
 // quality control
@@ -200,14 +182,6 @@ workflow {
 	umi_tools_group_barcodes(umi_tools_group.out.bam)
 	umi_tools_count(umi_tools_group_barcodes.out.bam)
 
-	//umi_tools_count
-	//	.out
-	//	.tsv
-	//	.map{it[1]}
-	//	.collect()
-	//	.combine(probes_fasta)
-	//	.view()
-
 	umi_tools_group
 		.out
 		.group
@@ -218,44 +192,6 @@ workflow {
 		.set{ TO_DUP_RATE }
 
 	duplication_rate( TO_DUP_RATE.combine(duplication_rate_script) )
-
-	//umi_tools_group
-	//	.out
-	//	.group
-	//	.concat(umi_tools_group.out.bam)
-	//	.map{ [ it[0]["name"] , it ] }
-	//	.groupTuple()
-	//	.map{ [ *it[1][0] , *it[1][1][1..2] ] }
-	//	.set{ TO_SUBSAMPLE }
-
-	//subsample( TO_SUBSAMPLE.combine(subsample_script) )
-
-	//subsample
-	//	.out
-	//	.group_gz
-	//	.concat(subsample.out.bam)
-	//	.map{ [ it[0]["name"] , it ] }
-	//	.groupTuple()
-	//	.map{ [ *it[1][0] , *it[1][1][1..2] ] }
-	//	.set{ TO_COLLAPSE }
-
-	//collapse_barcodes( TO_COLLAPSE.combine(collapse_script) )
-
-	//subsample
-	//	.out
-	//	.group
-	//	.concat(collapse_barcodes.out.whitelist)
-	//	.map{ [ it[0]["name"] , it ] }
-	//	.groupTuple()
-	//	.map{ [ *it[1][0] , it[1][1][1] ] }
-	//	.set{TO_DUP_RATE}
-
-	//duplication_rate( TO_DUP_RATE.combine(duplication_rate_script) )
-
-
-	////umi_tools_deduplicate(align_probe.out.bam)
-	////umi_tools_count(umi_tools_deduplicate.out.bam)
-	////umi_tools_count(align_probe.out.bam)
 
 	///////////////////////////////////////////////////////////////////////////
 
