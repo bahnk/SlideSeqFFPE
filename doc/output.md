@@ -8,19 +8,22 @@ Otherwise, you shoud find a `demultiplexing` directory, a `probe_index` director
 
 ```bash
 $ ls -l results 
-total 1547
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 10um_bead-prok
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 10um_RNase1
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 10um_RNase2
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 10um_std
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 5um_bead-prok
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 5um_RNase1
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 5um_RNase2
-drwxr-xr-x 10 bahn domain users    4096 Jul 29 11:53 5um_std
-drwxr-xr-x  4 bahn domain users    4096 Jul 29 16:08 demultiplexing
-drwxr-xr-x  2 bahn domain users    4096 Jul 29 16:09 multiqc_data
--rwxr-xr-x  1 bahn domain users 1340399 Jul 29 16:09 multiqc_report.html
-drwxr-xr-x  2 bahn domain users    4096 Jul 29 16:08 probe_index
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 10um_bead-prok
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 10um_RNase1
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 10um_RNase2
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 10um_std
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 5um_bead-prok
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 5um_RNase1
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 5um_RNase2
+drwxr-xr-x 11 bahn domain users    4096 Aug 26 13:43 5um_std
+drwxr-xr-x  4 bahn domain users    4096 Aug 26 13:43 demultiplexing
+-rwxr-xr-x  1 bahn domain users     165 Aug 26 13:43 metrics.duplicates_percent.csv
+-rwxr-xr-x  1 bahn domain users     643 Aug 26 13:43 metrics.read_counts.csv
+-rwxr-xr-x  1 bahn domain users     582 Aug 26 13:43 metrics.read_percent.csv
+-rwxr-xr-x  1 bahn domain users     192 Aug 26 13:43 metrics.umis_per_barcode.csv
+drwxr-xr-x  2 bahn domain users    4096 Aug 26 13:43 multiqc_data
+-rwxr-xr-x  1 bahn domain users 1340399 Aug 26 13:43 multiqc_report.html
+drwxr-xr-x  2 bahn domain users    4096 Aug 26 13:43 probe_index
 ```
 
 In each sample directory, you should find the output files of each step detailed [here](steps.md) organised by order.
@@ -28,18 +31,19 @@ In each sample directory, you should find the output files of each step detailed
 
 ```bash
 $ ls -l results/10um_bead-prok
-total 8
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 00_fastqc
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 01_filter_out_too_short_read1
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 02_extract_barcode_and_umi
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 03_filter_out_bad_up_primer_sequence
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 04_extract_probe_sequence
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 05_align_probe
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 06_umi_tools_deduplicate
-drwxr-xr-x 2 bahn domain users 4096 Jul 29 16:08 07_umi_tools_count
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 00_fastqc
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 01_filter_out_too_short_read1
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 02_extract_barcode_and_umi
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 03_filter_out_bad_up_primer_sequence
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 04_extract_probe_sequence
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 05_align_probe
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 06_umi_tools_group
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 07_umi_tools_group_barcodes
+drwxr-xr-x 2 bahn domain users   4096 Aug 26 13:43 08_umi_tools_count
+-rwxr-xr-x 1 bahn domain users 101939 Aug 26 13:43 10um_bead-prok.pdf
 ```
 
-The count matrix can be found in the `07_umi_tools_count` folder:
+The count matrix can be found in the `08_umi_tools_count` folder:
 
 ```bash
 $ ls -l results/10um_bead-prok/07_umi_tools_count
@@ -51,7 +55,7 @@ total 6401
 The count matrix is the sample name with the `.count.tsv` suffix:
 
 ```bash
-$ head results/10um_bead-prok/07_umi_tools_count/10um_bead-prok.count.tsv
+$ head results/10um_bead-prok/08_umi_tools_count/10um_bead-prok.count.tsv
 gene    cell    count
 Actb_1128       AAAAACTCGTTATC  1
 Actb_1128       AAAACACGTAGCGC  1

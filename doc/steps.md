@@ -81,13 +81,15 @@ We use [Bowtie 2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) to ali
 
 ## Deduplication
 
-The deduplication step uses the UMIs to remove any sort of duplicated reads.
-This step is performed using [umi_tools dedup](https://umi-tools.readthedocs.io/en/latest/reference/dedup.html).
-Importantly, we run `umi_tools dedup` with the `--per-cell` parameter, which means that `umi_tools` will group the reads based on their bead barcode sequence before deduplication.
-**This is something we should talk about.**
+The deduplication step uses barcodes, UMIs and probe mapping to remove duplicated reads.
+This step is performed using [umi_tools dedup](https://umi-tools.readthedocs.io/en/latest/reference/group.html).
+We run `umi_tools group` twice:
+
+ 1. on the UMIs, grouping by barcode (`--per-cell`) and probe (`--per-gene`)
+ 2. on the barcodes, grouping by corrected UMI (`--per-cell`) and probe (`--per-gene`)
 
 ## Generate count matrix
 
 We run [umi_tools count](https://umi-tools.readthedocs.io/en/latest/reference/count.html) in order to generate a count matrix.
-We run it with the `--per-cell` and `--per-contig` parameters, which means that we count the number of probes associated with each bead barcode.
+We run it with the `--per-cell` and `--per-gene` (probe) parameters, which means that we count the number of probes associated with each bead barcode.
 
