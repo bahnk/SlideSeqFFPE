@@ -28,7 +28,7 @@ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/probes.fas
 module load Nextflow/22.04.0 Singularity/3.6.4
 
 # pull the latest version
-nextflow pull bahnk/SlideSeqFFPE
+nextflow pull bahnk/SlideSeqFFPE -r main
 
 # run the pipeline and pray
 nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
