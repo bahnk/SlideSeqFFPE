@@ -94,8 +94,12 @@ def DupRate(name, umi_groups_path, bcd_groups_path, suffix):#
 			
 	mean_umis = pd\
 		.DataFrame({
-			"Barcodes": ["All", "Top 10 %"],
-			"Mean": [round(umis.UMIs.mean(), 2), round(top10.UMIs.mean(), 2)]
+			"Barcodes": ["All", "Top 10 %", "Threshold"],
+			"Mean": [
+				round(umis.UMIs.mean(), 2),
+				round(top10.UMIs.mean(), 2),
+				threshold
+			]
 		})\
 		.assign(Name=name)\
 		.assign(Process="Count")\

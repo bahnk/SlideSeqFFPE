@@ -67,7 +67,8 @@ def ExportMetrics(name, directory):#
 	umis = df\
 		.loc[[
 			("Count", "All"),
-			("Count", "Top 10 %")
+			("Count", "Top 10 %"),
+			("Count", "Threshold")
 		]]
 	umis.index = umis.index.droplevel()
 	umis.columns = umis.columns.droplevel()

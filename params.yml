@@ -5,6 +5,7 @@ sample_sheet: data/SampleSheet.csv
 data_dir: data
 probes_fasta: probes.fasta
 output_dir: results
+reads_to_sample: 200000
 minimum_length_read1: 43
 maximum_errors_up_primer: 3
 five_prime_probe_adapter_length: 41

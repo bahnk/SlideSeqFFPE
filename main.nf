@@ -47,6 +47,13 @@ include { bcl2fastq } from "./modules/process/demultiplexing"
 include { merge_lanes } from "./modules/process/demultiplexing"
 /////////////////
 
+//////////////
+// subsampling
+
+include { count_reads } from "./modules/process/subsampling"
+include { subsample } from "./modules/process/subsampling"
+//////////////
+
 /////////////
 // processing
 
@@ -117,7 +124,7 @@ workflow {
 
 	bcl2fastq(TO_DEMULTI)
 
-	////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 	bcl2fastq
 		.out
@@ -130,15 +137,42 @@ workflow {
 		.filter{ it[0]["name"] != "Undetermined" }
 		.set{ FASTQ }
 
+	//// TODO
+	//// merging the samples run on several lanes here
+	//// the channel could be named SAMPLES
+
 	fastqc(FASTQ)
+	
+	///////////////////////////////////////////////////////////////////////////
 
-	// TODO
-	// merging the samples run on several lanes here
-	// the channel could be named SAMPLES
+	count_reads(FASTQ)
 
-	////////////////////////////////////////////////////////////////////////////
+	count_reads
+		.out
+		.map{ it[1].toInteger() }
+		.min()
+		.concat( Channel.value(params.reads_to_sample) )
+		.min()
+		.set{ MIN_READS }
 
-	filter_out_too_short_read1(FASTQ)
+	FASTQ
+		.combine(MIN_READS)
+		.map{ [ addValue(it[0], "min_reads", it[3]) , *it[1..2] ] }
+		.map{[
+			addValue(it[0], "name", it[0]["name"] + ".subsampled"),
+			*it[1..2]
+		]}
+		.set{ TO_SUBSAMPLE }
+	
+	subsample(TO_SUBSAMPLE)
+
+	FASTQ
+		.concat(subsample.out)
+		.set{ ALL_FASTQ }
+
+	///////////////////////////////////////////////////////////////////////////
+
+	filter_out_too_short_read1(ALL_FASTQ)
 	plot_filter_out_too_short_read1(
 		filter_out_too_short_read1
 			.out
@@ -156,7 +190,7 @@ workflow {
 	)
 	extract_probe_sequence(filter_out_bad_up_primer.out.pass)
 
-	////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 	create_probe_index(probes_fasta)
 
@@ -179,7 +213,7 @@ workflow {
 
 	add_tags( align_probe.out.bam.combine(add_tags_script) )
 
-	////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 	umi_tools_group(add_tags.out.bam)
 	umi_tools_group_barcodes(umi_tools_group.out.bam)
@@ -196,7 +230,7 @@ workflow {
 
 	duplication_rate( TO_DUP_RATE.combine(duplication_rate_script) )
 
-	////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 	plot_filter_out_too_short_read1.out.pdf
 		.concat(filter_out_bad_up_primer.out.pdf)
@@ -232,7 +266,7 @@ workflow {
 	
 	export_metrics( TO_EXPORT.combine(export_metrics_script) )
 
-	////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 	//bcl2fastq.out.stats
 	//bcl2fastq.out.reports

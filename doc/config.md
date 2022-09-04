@@ -12,10 +12,11 @@ sample_sheet: data/SampleSheet.csv
 data_dir: data
 probes_fasta: assets/probes.fasta
 output_dir: results
+reads_to_sample: 200000
 minimum_length_read1: 43
 maximum_errors_up_primer: 3
-five_prime_probe_adapter_length: 38
-probe_length: 31
+five_prime_probe_adapter_length: 41
+probe_length: 25
 
 ```
 
@@ -32,6 +33,7 @@ params.yml
  * `sample_sheet`: the path of the sample sheet (used for [demultiplexing](steps.md#demultiplexing))
  * `data_dir`: the path of the sequencing folder (used for [demultiplexing](steps.md#demultiplexing))
  * `probes_fasta`: the path (used to [create an index](steps.md#create-probe-index))
+ * `reads_to_sample`: number of reads to subsample (we run the pipeline in parallel with the same number of reads for each sample)
  * `output_dir`: the path of the output directory that will contain the results
  * `minimum_length_read1`: minimum read length for Read 1 (should be 43)
  * `maximum_errors_up_primer`: maximum edit distance for a valid UP primer (3 is good but can be higher)
