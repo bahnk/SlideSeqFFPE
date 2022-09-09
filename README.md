@@ -23,6 +23,7 @@ Then, you can just run:
 # download the example parmeters file and the probe sequences
 wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/params.yml
 wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/probes.fasta
+wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/template.fasta
 
 # load nextflow and singularity
 module load Nextflow/22.04.0 Singularity/3.6.4

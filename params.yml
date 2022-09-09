@@ -4,6 +4,7 @@
 sample_sheet: data/SampleSheet.csv
 data_dir: data
 probes_fasta: probes.fasta
+template_fasta: template.fasta
 output_dir: results
 reads_to_sample: 200000
 minimum_length_read1: 43

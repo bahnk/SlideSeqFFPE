@@ -5,7 +5,7 @@ process create_probe_index {
 	label "sequencing"
 	cpus 12
 
-	publishDir Paths.get( params.output_dir , "probe_index" ),
+	publishDir Paths.get( params.output_dir , "indexes", "probe_index" ),
 		mode: "copy",
 		overwrite: "true"
 

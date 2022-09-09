@@ -109,6 +109,21 @@ include { export_metrics } from "./modules/process/quality_control"
 export_metrics_script = Channel.fromPath("$workflow.projectDir/bin/export_metrics.py")
 //////////////////
 
+///////////
+// unmapped
+
+template_fasta = Channel.fromPath(params.template_fasta)
+include { create_template_index } from "./modules/process/unmapped"
+
+include { align_unmapped } from "./modules/process/unmapped"
+
+include { get_unmapped } from "./modules/process/unmapped"
+include { get_unmapped_sequences } from "./modules/process/unmapped"
+
+include { unmapped_read1 } from "./modules/process/unmapped"
+unmapped_read1_script = Channel.fromPath("$workflow.projectDir/bin/unmapped_read1.py")
+///////////
+
 ///////////////////////////////////////////////////////////////////////////////
 //// SAMPLES //////////////////////////////////////////////////////////////////
 
@@ -124,7 +139,7 @@ workflow {
 
 	bcl2fastq(TO_DEMULTI)
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	bcl2fastq
 		.out
@@ -143,7 +158,7 @@ workflow {
 
 	fastqc(FASTQ)
 	
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	count_reads(FASTQ)
 
@@ -170,7 +185,7 @@ workflow {
 		.concat(subsample.out)
 		.set{ ALL_FASTQ }
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	filter_out_too_short_read1(ALL_FASTQ)
 	plot_filter_out_too_short_read1(
@@ -190,7 +205,7 @@ workflow {
 	)
 	extract_probe_sequence(filter_out_bad_up_primer.out.pass)
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	create_probe_index(probes_fasta)
 
@@ -213,7 +228,7 @@ workflow {
 
 	add_tags( align_probe.out.bam.combine(add_tags_script) )
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	umi_tools_group(add_tags.out.bam)
 	umi_tools_group_barcodes(umi_tools_group.out.bam)
@@ -230,7 +245,7 @@ workflow {
 
 	duplication_rate( TO_DUP_RATE.combine(duplication_rate_script) )
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 
 	plot_filter_out_too_short_read1.out.pdf
 		.concat(filter_out_bad_up_primer.out.pdf)
@@ -266,7 +281,46 @@ workflow {
 	
 	export_metrics( TO_EXPORT.combine(export_metrics_script) )
 
-	///////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
+
+	create_template_index(template_fasta)
+
+	get_unmapped(
+		align_probe
+			.out
+			.bam
+			.filter{ ! it[0]["name"].endsWith(".subsampled") }
+	)
+
+	filter_out_bad_up_primer
+		.out
+		.pass
+		.filter{ ! it[0]["name"].endsWith(".subsampled") }
+		.concat(get_unmapped.out)
+		.map{ [ it[0]["name"] , *it ] }
+		.groupTuple()
+		.map{ [ it[1][0] , *it[2] ] }
+		.set{ TO_GET_UNMAPPED_SEQ }
+
+	get_unmapped_sequences(TO_GET_UNMAPPED_SEQ)
+
+	align_unmapped(
+		get_unmapped_sequences
+			.out
+			.fastq
+			.combine( create_template_index.out.index.map{[it]} )
+	)
+
+	FASTQ 
+		.concat(get_unmapped.out)
+		.map{ [ it[0]["name"] , it ] }
+		.groupTuple()
+		.map{ [ it[1][0][0] , *it[1][0][1..2] , it[1][1][1] ] }
+		.set{ TO_UNMAPPED_READ1 }
+	
+	unmapped_read1( TO_UNMAPPED_READ1.combine(unmapped_read1_script) )
+
+	////////////////////////////////////////////////////////////////////////////
 
 	//bcl2fastq.out.stats
 	//bcl2fastq.out.reports
