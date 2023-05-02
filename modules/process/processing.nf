@@ -112,7 +112,7 @@ process extract_barcode_and_umi {
 	script:
 
 		name = metadata["name"]
-		regex = "^(?P<cell_1>.{1,8}).{1,18}(?P<cell_2>.{1,6})(?P<discard_2>.{1,3})(?P<umi_1>.{1,8})(?<discard_1>.*)"
+		regex = "^(?P<cell_1>.{1,8}).{1,18}(?P<cell_2>.{1,6})(?P<umi_1>.{1,9})(?<discard_1>.*)"
 		suffix = "extract_barcode_umi"
 
 		"""
@@ -184,7 +184,7 @@ process extract_probe_sequence {
 
 	tag { "${name}" }
 
-	label "sequencing"
+	label "python"
 
 	cpus 12
 
@@ -194,52 +194,25 @@ process extract_probe_sequence {
 		saveAs: { filename -> "${name}/04_extract_probe_sequence/${filename}" }
 
 	input:
-		tuple val(metadata), path(fastq)
+		tuple val(metadata), path(fastq), path(script), path(plot_script)
 
 	output:
-		tuple val(metadata), path("${name}.${suffix1}.fastq.gz"), emit: five_prime
-		tuple val(metadata), path("${name}.${suffix2}.fastq.gz"), emit: fastq
-		tuple val(metadata), path("${name}.${suffix2}.csv"), emit: metrics
-		tuple val(metadata), path("Version"), emit: version
+		tuple val(metadata), path("${name}.${suffix}.unmatched.fastq.gz"), emit: unmatched
+		tuple val(metadata), path("${name}.${suffix}.too_short.fastq.gz"), emit: too_short
+		tuple val(metadata), path("${name}.${suffix}.pass.fastq.gz"), emit: fastq
+		tuple val(metadata), path("${name}.${suffix}.csv"), emit: metrics
+		tuple val(metadata), path("${name}.${suffix}.pdf"), emit: pdf
+		tuple val(metadata), path("${name}.${suffix}.png"), emit: png
 
 	script:
 
 		name = metadata["name"]
-		suffix1 = "5prime_trimmed"
-		suffix2 = "probe_extracted"
+		suffix = "probe_extraction"
 
 		"""
-		seqtk trimfq \
-			-b $params.five_prime_probe_adapter_length \
-			$fastq \
-			| gzip -c > "${name}.${suffix1}.fastq.gz"
+		python3 $script "${name}" $fastq
 
-		cutadapt \
-			--cores $task.cpus \
-			--length $params.probe_length \
-			-o "${name}.${suffix2}.fastq.gz" \
-			"${name}.${suffix1}.fastq.gz"
-
-		seqtk 2>&1 | grep -i version | awk '{ print "seqtk " \$0 }' > Version
-		cutadapt --version | awk '{ print "cudadapt version " \$0 }' >> Version
-
-		zcat $fastq \
-			| sed -n "2~4p" \
-			| wc -l \
-			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "Total", \$0 }' \
-			> "${name}.${suffix2}.csv"
-
-		zcat "${name}.${suffix1}.fastq.gz" \
-			| sed -n "2~4p" \
-			| wc -l \
-			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "5\\x27 Adapter", \$0 }' \
-			>> "${name}.${suffix2}.csv"
-
-		zcat "${name}.${suffix2}.fastq.gz" \
-			| sed -n "2~4p" \
-			| wc -l \
-			| awk '{ printf "%s,%s,%s,%s\\n", "${name}", "Probe extraction", "Shortened", \$0 }' \
-			>> "${name}.${suffix2}.csv"
+		python3 $plot_script "${name}.${suffix}.csv" "${name}"
 		"""
 }
 

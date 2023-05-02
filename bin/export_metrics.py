@@ -36,7 +36,7 @@ def ExportMetrics(name, directory):#
 			("Read 1 length", "Long enough"),
 			("Barcode/UMI extraction", "Success"),
 			("UP primer", "Pass"),
-			("Probe extraction", "Shortened"),
+			("Probe extraction", "Pass"),
 			("Alignment", "Mapped"),
 			("Count", "Non duplicate")
 		]]

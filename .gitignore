@@ -1,5 +1,6 @@
 *.swp
 .nextflow*
+data
 nextflow/*
 results/*
 tmp/*

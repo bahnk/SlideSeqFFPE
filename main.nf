@@ -65,8 +65,11 @@ include { extract_barcode_and_umi } from "./modules/process/processing"
 include { filter_out_bad_up_primer } from "./modules/process/processing"
 
 up_primer_script = Channel.fromPath("$workflow.projectDir/bin/up_primer.py")
-include { extract_probe_sequence } from "./modules/process/processing"
 plot_up_primer_script = Channel.fromPath("$workflow.projectDir/bin/plot_up_check.py")
+
+include { extract_probe_sequence } from "./modules/process/processing"
+extract_probe_script = Channel.fromPath("$workflow.projectDir/bin/probe_extraction.py")
+plot_extract_probe_script = Channel.fromPath("$workflow.projectDir/bin/plot_extract_probe.py")
 /////////////
 
 ////////////
@@ -203,7 +206,13 @@ workflow {
 			.combine(up_primer_script)
 			.combine(plot_up_primer_script)
 	)
-	extract_probe_sequence(filter_out_bad_up_primer.out.pass)
+	extract_probe_sequence(
+		filter_out_bad_up_primer
+			.out
+			.pass
+			.combine(extract_probe_script)
+			.combine(plot_extract_probe_script)
+	)
 
 	////////////////////////////////////////////////////////////////////////////
 
@@ -249,6 +258,7 @@ workflow {
 
 	plot_filter_out_too_short_read1.out.pdf
 		.concat(filter_out_bad_up_primer.out.pdf)
+		.concat(extract_probe_sequence.out.pdf)
 		.concat(check_mapping.out.mapped_pdf)
 		.concat(check_mapping.out.hits_pdf)
 		.concat(check_mapping.out.reads_per_umi_pdf)
