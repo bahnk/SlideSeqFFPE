@@ -58,11 +58,32 @@ nextflow pull bahnk/SlideSeqFFPE
 Finally, you can run the pipeline this way:
 
 ```bash
-nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml
+nextflow run bahnk/SlideSeqFFPE -r spatial -params-file params.yml
 ```
 
 Alternatively, if you don't want to edit the `params.yml` file, then you can overwrite the parameters this way:
 
 ```bash
-nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
+nextflow run bahnk/SlideSeqFFPE -r spatial -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
 ```
+
+## If you're on NEMO
+
+In order to simplify usage of absolute paths, it was decided to mount the whole filesytem when using `singularity` ([here](https://github.com/bahnk/SlideSeqFFPE/blob/spatial/conf/process.config#L5)).
+The pipeline was developed on CAMP, so if you're on NEMO you should use the following procedure.
+
+First, create a configuration file named `singularity.config` with the following content:
+
+```
+singularity {
+	enabled = true
+	runOptions = "-B /nemo --nv"
+}
+```
+
+Second, pass this configuration file to nextflow when you run the pipeline:
+
+```
+nextflow -c singularity.config run bahnk/SlideSeqFFPE -r spatial -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
+```
+

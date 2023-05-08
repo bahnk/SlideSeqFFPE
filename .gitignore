@@ -1,5 +1,8 @@
+*.sif
 *.swp
 .nextflow*
+A*_BeadBarcodes.txt
+SampleSheet.csv
 data
 nextflow/*
 results/*

@@ -10,6 +10,7 @@
 7. [Alignment](#alignment)
 8. [Deduplication](#deduplication)
 9. [Generate count matrix](#generate-count-matrix)
+9. [Match bead barcodes](#match-bead-barcodes)
 
 ## Demultiplexing
 
@@ -92,4 +93,8 @@ We run `umi_tools group` twice:
 
 We run [umi_tools count](https://umi-tools.readthedocs.io/en/latest/reference/count.html) in order to generate a count matrix.
 We run it with the `--per-cell` and `--per-gene` (probe) parameters, which means that we count the number of probes associated with each bead barcode.
+
+## Match bead barcodes
+
+We extract bead barcodes from sequencing library and match their spatial counterparts using Hamming distance in order to add `x` and `y` coordinates to the count matrix.
 

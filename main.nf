@@ -101,6 +101,14 @@ duplication_rate_script = Channel.fromPath("$workflow.projectDir/bin/duplication
 include { umi_tools_count } from "./modules/process/deduplication"
 ////////////////
 
+///////////////////
+// barcode matching
+
+include { barcode_matching } from "./modules/process/matching"
+matching_script = Channel.fromPath("$workflow.projectDir/bin/matching.py")
+
+///////////////////
+
 //////////////////
 // quality control
 
@@ -134,6 +142,14 @@ Channel
 	.fromPath(params.data_dir)
 	.combine( Channel.fromPath(params.sample_sheet) )
 	.set{ TO_DEMULTI }
+
+///////////////////////////////////////////////////////////////////////////////
+//// PUCKS ////////////////////////////////////////////////////////////////////
+
+pucks = params.pucks.collect{ k, v ->
+	[ k , Paths.get("$workflow.projectDir", v) ]
+}
+pucks = Channel.fromList(pucks)
 
 ///////////////////////////////////////////////////////////////////////////////
 //// MAIN WORKFLOW ////////////////////////////////////////////////////////////
@@ -256,6 +272,19 @@ workflow {
 
 	////////////////////////////////////////////////////////////////////////////
 
+	barcode_matching(
+		umi_tools_count
+			.out
+			.tsv
+			.filter{ ! it[0]["name"].endsWith(".subsampled") }
+			.combine(pucks)
+			.filter{ it[0]["name"] == it[2] }
+			.map{ [ *it[0..1] , it[3] ] }
+			.combine(matching_script)
+	)
+
+	////////////////////////////////////////////////////////////////////////////
+
 	plot_filter_out_too_short_read1.out.pdf
 		.concat(filter_out_bad_up_primer.out.pdf)
 		.concat(extract_probe_sequence.out.pdf)
@@ -267,6 +296,7 @@ workflow {
 		//.concat(check_mapping.out.probes_per_umi_pdf)
 		.concat(duplication_rate.out.reads_pdf)
 		.concat(duplication_rate.out.umis_pdf)
+		.concat(barcode_matching.out.umis_pdf)
 		.map{ [ it[0]["name"] , it[1] ] }
 		.groupTuple()
 		.set{PDFS}
@@ -330,7 +360,7 @@ workflow {
 	
 	unmapped_read1( TO_UNMAPPED_READ1.combine(unmapped_read1_script) )
 
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
 
 	//bcl2fastq.out.stats
 	//bcl2fastq.out.reports

@@ -68,3 +68,17 @@ Actb_1128       AAACCAACTTCCAG  1
 Actb_1128       AAACGTGACACCAA  1
 ```
 
+The count matrix with spatial information is the sample name with the `.dge.csv` suffix:
+
+```bash
+$ head results/10um_bead-prok/10_barcode_matching/10um_bead-prok.barcode_matching.dge.csv
+cell,barcode,x,y,gene,count
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,Ubc_26,1
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,WA_Gapdh-1,1
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,WA_Gapdh-2,1
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,WA_Gapdh-4,1
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,WA_Malat1-1,3
+AAAAACAGCTATCG,AAAAACAGCTATCG,3388.8,3331.5,WA_Malat1-4,1
+AAAAACAGGCAATC,AAAAACAGGCAATC,4413.0,2062.0,WA_Malat1-1,1
+```
+

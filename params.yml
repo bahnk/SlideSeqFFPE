@@ -1,5 +1,5 @@
 
-sample_sheet: data/SampleSheet.csv
+sample_sheet: SampleSheet.csv
 data_dir: data
 probes_fasta: probes.fasta
 template_fasta: template.fasta
@@ -7,5 +7,10 @@ output_dir: results
 reads_to_sample: 200000
 minimum_length_read1: 41
 maximum_errors_up_primer: 3
+maximum_errors_bead_barcode: 3
 five_prime_probe_adapter_length: 41
 probe_length: 25
+
+# be careful, this needs to be a map
+pucks:
+  Curio_A0008-021: A0008_021_BeadBarcodes.txt

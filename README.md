@@ -29,9 +29,24 @@ wget https://bioinformatics.crick.ac.uk/shiny/users/bahn/slideseqffpe/template.f
 module load Nextflow/22.04.0 Singularity/3.6.4
 
 # pull the latest version
-nextflow pull bahnk/SlideSeqFFPE -r main
+nextflow pull bahnk/SlideSeqFFPE -r spatial
 
 # run the pipeline and pray
-nextflow run bahnk/SlideSeqFFPE -r main -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
+nextflow run bahnk/SlideSeqFFPE -r spatial -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
+```
+
+If you're on NEMO, you need to create a configuration file named `singularity.config`with the following content:
+
+```
+singularity {
+	enabled = true
+	runOptions = "-B /nemo --nv"
+}
+```
+
+Then, pass this configuration file to nextflow when you run the pipeline:
+
+```
+nextflow -c singularity.config run bahnk/SlideSeqFFPE -r spatial -params-file params.yml --sample_sheet /path/to/samplesheet --data_dir /path/to/sequencingdirectory
 ```
 
