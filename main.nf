@@ -147,7 +147,7 @@ Channel
 //// PUCKS ////////////////////////////////////////////////////////////////////
 
 pucks = params.pucks.collect{ k, v ->
-	[ k , Paths.get("$workflow.projectDir", v) ]
+	[ k , Paths.get("$workflow.launchDir", v) ]
 }
 pucks = Channel.fromList(pucks)
 
